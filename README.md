@@ -1,21 +1,27 @@
 # How I Built Agentic Employee Onboarding System
 
+Hands-on: Engineering an AI Solution for Seamless Onboarding
+
 ## TL;DR
-I built an AI-powered Scrum Master that connects to Trello, analyzes sprint data, and generates detailed reports automatically. It uses multiple specialized AI agents working together through the CrewAI framework, with each agent handling a specific part of the process: data collection, analysis, and reporting. The system is configurable and saves Scrum Masters hours of manual work each sprint.
+I built an AI-powered onboarding assistant that guides new employees through their first days using natural language processing. The system answers HR questions using company documents, displays personalized schedules and checklists, and generates welcome emails — all through a simple command-line interface. By separating business logic from technical implementation, it’s easily adaptable to different organizations.
 
 ## Introduction:
-Have you ever wished you could clone yourself to handle all the repetitive parts of being a Scrum Master? I did, which is why I built an AI agent to take care of the tedious aspects of sprint management. Scrum Master for a growing development team, spends hours each week collecting data, analyzing trends, and creating reports. I realized much of this work followed patterns that could be automated, freeing them to focus on what really matters — helping team solve problems and improve their process.
+First day at job is overwhelming — paperwork everywhere, countless new systems to learn, and a calendar packed with orientation meetings. I remember thinking there had to be a better way. That’s when the idea struck me: what if we could build an intelligent assistant that guided employees through their first days while answering their questions instantly? No more hunting through outdated wikis or waiting for HR to respond to emails. This article walks through how I built exactly that — an AI-powered onboarding agent that makes the first week at a new job smoother for everyone involved.
 
 ## What’s This Article About?
-This article walks through how I built a system of AI agents that work together to automate sprint management tasks. I’ll explain how I used the CrewAI framework to create specialized agents that:
+This article explores the development of an AI onboarding system that serves as a virtual assistant for new employees. The system I built combines several powerful technologies into a practical tool that:
 
-- Collect data from Trello boards about tasks, team members, and progress
-- Analyze this data to identify blockers, delays, and team performance issues
--Generate comprehensive, well-formatted sprint reports
+- Answers employee questions by retrieving information from company documents using AI
+-Displays personalized onboarding checklists showing progress through required tasks
+- Provides custom schedules for training and orientation activities
+- Shows role-specific learning resources tailored to each employee’s position
+- Generates personalized welcome emails with relevant information
 
-The system connects to your team’s Trello board, processes all the cards and lists, identifies issues like blockers and approaching deadlines, analyzes team workload distribution, and creates detailed reports — all without manual intervention. I’ve designed it to be configurable through external files, making it adaptable to different team workflows without changing code.
+The core of the system is a retrieval-augmented generation (RAG) pipeline that finds relevant information in company documents and uses a large language model to craft helpful responses. I designed it with a simple command-line interface where employees can type natural commands like “ask what is the vacation policy?” or “show my schedule” to get immediate assistance.
 
-Full Article : [https://medium.com/@learn-simplified/how-i-built-scrum-master-ai-agent-309522082e80
+What makes this system special is how it separates technical implementation from business content. HR teams can easily update onboarding schedules, checklists, and company information without touching any code, while the technical foundation remains stable and maintainable.
+
+Full Article : [https://medium.com/@learn-simplified/how-i-built-agentic-employee-onboarding-system-d830ac92293d
 
 
 ## Tech Stack  
@@ -28,7 +34,7 @@ Full Article : [https://medium.com/@learn-simplified/how-i-built-scrum-master-ai
 ![Design Diagram](design_docs/design.png)
 
 
-# Tutorial: Scrum Master AI Agent
+# Tutorial: How I Built Agentic Employee Onboarding System
 
 ## Prerequisites
 - Python installed on your system.
@@ -58,7 +64,7 @@ Full Article : [https://medium.com/@learn-simplified/how-i-built-scrum-master-ai
 
 **Install Project Dependencies:**
 
-Follow these steps to set up and run the  "Scrum Master AI Agent"
+Follow these steps to set up and run the  "How I Built Agentic Employee Onboarding System"
 
 1. Navigate to your project directory:
    ```
@@ -73,7 +79,7 @@ Follow these steps to set up and run the  "Scrum Master AI Agent"
    This command installs all the necessary Python packages listed in the requirements.txt file.
 
 
-# Run - Hands-On Guide: Scrum Master AI Agent
+# Run - Hands-On Guide: How I Built Agentic Employee Onboarding System
   
    ```
 
@@ -83,8 +89,10 @@ Follow these steps to set up and run the  "Scrum Master AI Agent"
    
 ## Closing Thoughts
 
-The future of AI in business isn’t about replacing humans — it’s about collaboration. As AI tools become more accessible, we’ll see more specialized agents handling routine work across all business functions. The next evolution will likely include AI agents that can proactively identify risks before they become problems and suggest process improvements based on historical sprint data.
+The future of AI in business isn’t about replacing humans but augmenting them with tools that handle routine tasks while providing insights that would otherwise remain hidden. As large language models become more capable and specialized domain knowledge becomes easier to integrate, we’ll see AI assistants becoming integral to every business function.
 
-I’m already working on enhancements to integrate with more tools, add predictive analytics capabilities, and improve the system’s ability to generate tailored recommendations. Imagine a near future where AI agents not only report on your team’s performance but participate in planning sessions, offering insights based on past sprints and industry benchmarks.
+Within the next few years, I expect onboarding systems like this one to evolve from text-based interfaces to multimodal experiences that include voice interaction, augmented reality walkthroughs of office spaces, and adaptive learning paths that adjust based on each employee’s progress and learning style.
 
-The most exciting aspect isn’t the technology itself but how it transforms our work. By automating the routine aspects of sprint management, we create space for more creative and impactful human contributions — the kind of work that AI can’t easily replicate.
+The most exciting developments will come from the data these systems collect. By analyzing patterns in questions asked, resources accessed, and time spent on different onboarding activities, companies will gain unprecedented insights into how to streamline the employee experience from day one.
+
+The businesses that thrive in the coming decade won’t be those that simply adopt AI tools, but those that thoughtfully integrate them into human workflows — creating systems where technology handles the routine while humans focus on creative, strategic, and interpersonal challenges. The onboarding system described in this article represents just one step in that broader journey.
