@@ -12,9 +12,33 @@ from chromadb.utils import embedding_functions
 from PyPDF2 import PdfReader
 from datetime import datetime
 import textwrap
+from colorama import Fore, Style, init
 
+# Initialize colorama
+init(autoreset=True)
 nltk.download('punkt', quiet=True)
 load_dotenv()
+
+# Color scheme
+COLORS = {
+    "title": Fore.CYAN + Style.BRIGHT,
+    "input": Fore.YELLOW,
+    "warning": Fore.RED,
+    "success": Fore.GREEN,
+    "header": Fore.MAGENTA + Style.BRIGHT,
+    "border": Fore.BLUE,
+    "text": Fore.WHITE
+}
+
+
+def format_section(title: str, content: list, color=COLORS["border"]):
+    """Create consistent left-aligned bordered sections"""
+    max_length = max(len(line) for line in content + [title]) if content else len(title)
+    border_top = f"{color}╭{'─' * (max_length + 2)}╮"
+    title_line = f"{color}│ {Style.BRIGHT}{title.upper().center(max_length)}{Style.NORMAL} {color}│"
+    content_lines = [f"{color}│{COLORS['text']}  {line.ljust(max_length)}  {color}│" for line in content]
+    border_bottom = f"{color}╰{'─' * (max_length + 2)}╯"
+    return "\n".join([border_top, title_line] + content_lines + [border_bottom])
 
 
 class OnboardingVectorDB:
@@ -29,7 +53,33 @@ class OnboardingVectorDB:
             metadata={"hnsw:space": "cosine"}
         )
 
-    # Existing methods remain the same...
+    def ingest_document(self, file_path: str, chunk_size: int = 3):
+        """Process documents into vector database"""
+        text = self._extract_text(file_path)
+        sentences = sent_tokenize(text)
+        chunks = [' '.join(sentences[i:i + chunk_size]) for i in range(0, len(sentences), chunk_size)]
+
+        doc_type = "hr" if "hr" in file_path.lower() else "technical"
+        metadatas = [{"source": file_path, "type": doc_type} for _ in chunks]
+
+        self.collection.add(
+            documents=chunks,
+            ids=[str(uuid.uuid4()) for _ in chunks],
+            metadatas=metadatas
+        )
+
+    def _extract_text(self, file_path: str) -> str:
+        """Extract text from PDF files"""
+        if file_path.endswith('.pdf'):
+            text = ""
+            with open(file_path, 'rb') as f:
+                reader = PdfReader(f)
+                for page in reader.pages:
+                    text += page.extract_text() + "\n"
+            return text.strip()
+        else:
+            with open(file_path, 'r') as f:
+                return f.read()
 
 
 class OnboardingAgent:
@@ -40,47 +90,30 @@ class OnboardingAgent:
         self.user_context = {}
 
     def start_session(self):
-        """Initialize a new onboarding session"""
-        print("\n" + "=" * 40)
-        print("  Welcome to Aniket AI Onboarding System  ")
-        print("=" * 40 + "\n")
+        """Initialize onboarding session"""
+        print(format_section("Welcome to Aniket AI Onboarding System", [], COLORS["title"]))
         self._collect_initial_info()
         self._show_help()
         self._main_interaction_loop()
 
     def _collect_initial_info(self):
-        """Collect basic user information"""
-        print("Let's get started with your onboarding!\n")
-        self.user_context['name'] = input("Your full name: ").strip()
-        self.user_context['role'] = input("Your job role: ").strip()
+        """Collect user information"""
+        print(format_section("Let's Get Started", [], COLORS["success"]))
+        self.user_context['name'] = input(f"{COLORS['input']}Your full name: ").strip()
+        self.user_context['role'] = input(f"{COLORS['input']}Your job role: ").strip()
         self.user_context['start_date'] = datetime.now().strftime("%Y-%m-%d")
-        print("\nWelcome, {}! Setting up your onboarding...\n".format(self.user_context['name']))
-
-    def _show_help(self):
-        """Display available commands"""
-        help_text = """
-        Available commands:
-        - ask [question]  : Get answers about company policies
-        - checklist       : View onboarding progress
-        - resources       : Show learning resources
-        - schedule        : View training schedule
-        - email           : Generate welcome email
-        - help            : Show this help menu
-        - exit            : End the session
-        """
-        print(textwrap.dedent(help_text))
+        print(f"\n{COLORS['success']}Welcome, {self.user_context['name']}! Setting up your onboarding...\n")
 
     def _main_interaction_loop(self):
-        """Handle continuous user interaction"""
+        """Handle user commands"""
         while True:
             try:
-                user_input = input("\nOnboarding Assistant> ").strip().lower()
+                user_input = input(f"{COLORS['border']}Onboarding Assistant> {COLORS['text']}").strip().lower()
                 if not user_input:
                     continue
 
                 if user_input.startswith("ask "):
-                    question = user_input[4:].strip()
-                    self._handle_question(question)
+                    self._handle_question(user_input[4:].strip())
                 elif user_input == "checklist":
                     self._show_checklist()
                 elif user_input == "resources":
@@ -92,138 +125,120 @@ class OnboardingAgent:
                 elif user_input == "help":
                     self._show_help()
                 elif user_input in ["exit", "quit"]:
-                    print("\nThank you for using Aniket AI Onboarding System!")
+                    print(format_section("Thank You", ["Goodbye!"], COLORS["title"]))
                     break
                 else:
-                    print("Unknown command. Type 'help' for available commands.")
+                    print(format_section("Error", ["Unknown command. Type 'help' for options."], COLORS["warning"]))
 
             except KeyboardInterrupt:
-                print("\nSession interrupted. Exiting...")
+                print(format_section("Session Interrupted", ["Exiting..."], COLORS["warning"]))
                 break
 
-    def _show_resources(self):
-        """Display role-specific learning resources"""
-        role = self.user_context.get('role', 'general').lower()
-
-        resources = {
-            'engineering': [
-                "1. Engineering Handbook: https://eng.aniket-ai.com",
-                "2. Code Repository: https://git.aniket-ai.com",
-                "3. ML Training Course: https://learn.aniket-ai.com/ml-101",
-                "4. Infrastructure Docs: https://docs.aniket-ai.com/cloud"
-            ],
-            'general': [
-                "1. Employee Portal: https://portal.aniket-ai.com",
-                "2. HR Policies: https://hr.aniket-ai.com/policies",
-                "3. IT Support: helpdesk@aniket-ai.com",
-                "4. Learning Platform: https://learn.aniket-ai.com"
-            ]
-        }
-
-        print("\nRecommended Resources:")
-        for item in resources.get(role, resources['general']):
-            print(f"  {item}")
+    def _show_checklist(self):
+        """Display onboarding progress"""
+        checklist = [
+            f"{COLORS['success']}✓ Complete HR paperwork",
+            f"{COLORS['success']}✓ Set up company email",
+            f"{COLORS['warning']}◻ Attend orientation session",
+            f"{COLORS['warning']}◻ Complete security training",
+            f"{COLORS['warning']}◻ Meet with team lead"
+        ]
+        progress = f"{COLORS['header']}Progress: {COLORS['success']}2/5 tasks completed"
+        print(format_section("Onboarding Checklist", checklist + [progress]))
 
     def _show_schedule(self):
-        """Generate personalized onboarding schedule"""
+        """Display training schedule"""
         schedule = [
-            f"Day 1 ({self.user_context['start_date']}):",
-            "  9:00 AM - Welcome Breakfast",
-            " 10:00 AM - HR Orientation",
-            "  2:00 PM - Workstation Setup",
+            f"{COLORS['header']}Day 1 ({self.user_context['start_date']}):",
+            f"{COLORS['success']}  9:00 AM - Welcome Breakfast",
+            f"{COLORS['border']} 10:00 AM - HR Orientation",
+            f"{COLORS['text']}  2:00 PM - Workstation Setup",
             "",
-            "Day 2:",
-            "  9:30 AM - Team Introduction",
-            " 11:00 AM - Systems Training",
+            f"{COLORS['header']}Day 2:",
+            f"{COLORS['success']}  9:30 AM - Team Introduction",
+            f"{COLORS['border']} 11:00 AM - Systems Training",
             "",
-            "Day 3:",
-            " 10:00 AM - Security Briefing",
-            "  1:00 PM - Role-Specific Training"
+            f"{COLORS['header']}Day 3:",
+            f"{COLORS['warning']} 10:00 AM - Security Briefing",
+            f"{COLORS['success']}  1:00 PM - Role-Specific Training",
+            f"{COLORS['border']}Full calendar: {COLORS['text']}https://calendar.aniket-ai.com"
         ]
+        print(format_section("Onboarding Schedule", schedule))
 
-        print("\nOnboarding Schedule:")
-        print("\n".join(schedule))
-        print("\nFull calendar available at: https://calendar.aniket-ai.com")
+    def _show_resources(self):
+        """Show learning resources"""
+        role = self.user_context.get('role', 'general').lower()
+        resources = [
+            f"{COLORS['success']}1. Employee Portal: {COLORS['text']}https://portal.aniket-ai.com",
+            f"{COLORS['success']}2. HR Policies: {COLORS['text']}https://hr.aniket-ai.com/policies",
+            f"{COLORS['success']}3. IT Support: {COLORS['text']}helpdesk@aniket-ai.com",
+            f"{COLORS['success']}4. Learning Platform: {COLORS['text']}https://learn.aniket-ai.com"
+        ]
+        if 'engineer' in role:
+            resources.extend([
+                f"{COLORS['success']}5. Code Repository: {COLORS['text']}https://git.aniket-ai.com",
+                f"{COLORS['success']}6. ML Training: {COLORS['text']}https://learn.aniket-ai.com/ml-101"
+            ])
+        print(format_section("Learning Resources", resources))
+
+    def _generate_welcome_email(self):
+        """Generate welcome email"""
+        email_content = [
+            f"{COLORS['header']}Subject: Welcome to Aniket AI, {self.user_context['name']}!",
+            "",
+            f"{COLORS['text']}Dear {self.user_context['name']},",
+            "",
+            f"{COLORS['success']}We're excited to have you join us as a {self.user_context['role']}!",
+            "",
+            f"{COLORS['border']}Your onboarding schedule:",
+            f"{COLORS['text']}- First day: {self.user_context['start_date']}",
+            f"{COLORS['text']}- Team meeting: {self.user_context['start_date']} 10:00 AM",
+            f"{COLORS['text']}- Equipment setup: IT Department (Floor 3)",
+            "",
+            f"{COLORS['header']}Best regards,",
+            f"{COLORS['success']}Aniket AI HR Team"
+        ]
+        print(format_section("Welcome Email", email_content, COLORS["success"]))
+
+    def _show_help(self):
+        """Show help menu"""
+        help_content = [
+            f"{COLORS['success']}ask [question]  : Get policy answers",
+            f"{COLORS['border']}checklist       : View progress",
+            f"{COLORS['success']}resources       : Learning materials",
+            f"{COLORS['border']}schedule        : Training timeline",
+            f"{COLORS['success']}email           : Generate welcome email",
+            f"{COLORS['border']}help            : Show this menu",
+            f"{COLORS['warning']}exit            : End session"
+        ]
+        print(format_section("Available Commands", help_content))
 
     @lru_cache(maxsize=100)
     def _handle_question(self, question: str):
-        """Enhanced QA handling with context"""
-        # Retrieve relevant information
+        """Answer questions using RAG"""
         results = self.db.collection.query(
             query_texts=[question],
             n_results=3,
-            include=["documents", "metadatas"]
+            where={"type": "hr"},
+            include=["documents"]
         )
 
-        # Prepare context-aware response
-        context = "\n\n".join(results['documents'][0]) if results['documents'] else ""
+        context = "\n".join(results['documents'][0]) if results['documents'] else ""
         response = self.groq.chat.completions.create(
             model="mixtral-8x7b-32768",
             messages=[{
                 "role": "system",
-                "content": f"""You are an onboarding assistant for {self.user_context['name']}, 
-                a new {self.user_context['role']} at Aniket AI. Use this context:
-                {context}
-                Respond professionally but conversationally."""
+                "content": f"""Answer as HR assistant for {self.user_context['name']}.
+                Context: {context}
+                Be concise and professional."""
             }, {
                 "role": "user",
                 "content": question
             }],
-            temperature=0.3,
-            top_p=0.7
+            temperature=0.3
         )
-
         answer = response.choices[0].message.content
-        self._format_response(answer)
-        self._log_interaction(question, answer)
-
-    def _format_response(self, text: str):
-        """Format responses professionally"""
-        wrapper = textwrap.TextWrapper(width=80, subsequent_indent='  ')
-        print("\n" + "\n".join(wrapper.wrap(text)) + "\n")
-
-    def _show_checklist(self):
-        """Generate dynamic onboarding checklist"""
-        checklist = [
-            "✓ Complete HR paperwork",
-            "✓ Set up company email",
-            "◻ Attend orientation session",
-            "◻ Complete security training",
-            "◻ Meet with team lead"
-        ]
-        print("\nOnboarding Checklist:")
-        print("\n".join(checklist))
-        print("\nProgress: 2/5 tasks completed\n")
-
-    def _generate_welcome_email(self):
-        """Create personalized welcome email"""
-        email_template = f"""
-        Subject: Welcome to Aniket AI, {self.user_context['name']}!
-
-        Dear {self.user_context['name']},
-
-        We're excited to have you join us as a {self.user_context['role']}!
-
-        Your onboarding schedule:
-        - First day orientation: {self.user_context['start_date']}
-        - Team meeting: {self.user_context['start_date']} 10:00 AM
-        - Equipment setup: IT Department (Floor 3)
-
-        Best regards,
-        Aniket AI HR Team
-        """
-        print(textwrap.dedent(email_template))
-
-    def _log_interaction(self, question: str, answer: str):
-        """Maintain interaction history"""
-        self.interaction_history.append({
-            'timestamp': datetime.now().isoformat(),
-            'question': question,
-            'answer': answer,
-            'user': self.user_context
-        })
-
-    # Additional methods for resources/schedule would go here...
+        print(format_section("Answer", [answer], COLORS["success"]))
 
 
 if __name__ == "__main__":

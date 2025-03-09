@@ -1,0 +1,16 @@
+{
+  "database": {
+    "path": "./onboarding_db",
+    "collection": "hr_docs",
+    "embedding_model": "all-MiniLM-L6-v2",
+    "similarity_metric": "cosine"
+  },
+  "llm": {
+    "model": "mixtral-8x7b-32768",
+    "temperature": 0.3
+  },
+  "rag": {
+    "query_results": 3,
+    "default_document_type": "hr"
+  }
+}

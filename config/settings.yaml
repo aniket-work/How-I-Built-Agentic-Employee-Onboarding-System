@@ -1,0 +1,61 @@
+# Configuration settings for AI Onboarding System
+
+# Company information
+company:
+  name: "Aniket AI"
+  domain: "aniket-ai.com"
+  hr_email: "hr@aniket-ai.com"
+  it_email: "helpdesk@aniket-ai.com"
+
+# Resources
+resources:
+  common:
+    - name: "Employee Portal"
+      url: "https://portal.aniket-ai.com"
+    - name: "HR Policies"
+      url: "https://hr.aniket-ai.com/policies"
+    - name: "IT Support"
+      url: "helpdesk@aniket-ai.com"
+    - name: "Learning Platform"
+      url: "https://learn.aniket-ai.com"
+
+  engineering:
+    - name: "Code Repository"
+      url: "https://git.aniket-ai.com"
+    - name: "ML Training"
+      url: "https://learn.aniket-ai.com/ml-101"
+
+# Checklist templates
+checklists:
+  default:
+    - task: "Complete HR paperwork"
+      status: "completed"
+    - task: "Set up company email"
+      status: "completed"
+    - task: "Attend orientation session"
+      status: "pending"
+    - task: "Complete security training"
+      status: "pending"
+    - task: "Meet with team lead"
+      status: "pending"
+
+# Schedule templates
+schedules:
+  default:
+    day1:
+      - time: "9:00 AM"
+        activity: "Welcome Breakfast"
+      - time: "10:00 AM"
+        activity: "HR Orientation"
+      - time: "2:00 PM"
+        activity: "Workstation Setup"
+    day2:
+      - time: "9:30 AM"
+        activity: "Team Introduction"
+      - time: "11:00 AM"
+        activity: "Systems Training"
+    day3:
+      - time: "10:00 AM"
+        activity: "Security Briefing"
+      - time: "1:00 PM"
+        activity: "Role-Specific Training"
