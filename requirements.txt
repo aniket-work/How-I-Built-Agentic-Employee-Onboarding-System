@@ -1,0 +1,14 @@
+# requirements.txt
+groq
+chromadb
+PyPDF2
+sentence-transformers
+nltk
+python-dotenv
+fpdf2
+torch
+numpy
+tqdm
+python-magic
+beautifulsoup4
+pandas
